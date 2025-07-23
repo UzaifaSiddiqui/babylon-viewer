@@ -1,0 +1,28 @@
+{
+  "name": "bablon-viewer-project",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "@babylonjs/core": "^8.14.1",
+    "@babylonjs/loaders": "^8.16.1",
+    "@babylonjs/serializers": "^8.15.1",
+    "@babylonjs/viewer": "^8.14.1",
+    "@polyhobbyist/babylon-collada-loader": "^0.0.8",
+    "fflate": "^0.8.2",
+    "parse": "^6.1.1",
+    "tga": "^1.0.7",
+    "tga-js": "^1.1.1",
+    "three": "^0.178.0"
+  },
+  "devDependencies": {
+    "vite": "^4.5.14"
+  }
+}
