@@ -129,6 +129,7 @@ const toggleBtn = document.getElementById("toggleWireframe");
 let wireframeEnabled = false;
 
 toggleBtn.addEventListener("click", () => {
+  window.dispatchEvent(new Event("pauseAndReset"));
     if (!wireframeEnabled) {
       meshList.forEach(mesh=>{
         createWireframeClone(mesh);
@@ -195,6 +196,7 @@ let uvToggleBtn = document.getElementById("toggleUVChecker");
 let uvCheckerEnabled = false;
 
 uvToggleBtn.addEventListener("click", () => {
+  window.dispatchEvent(new Event("pauseAndReset"));
     if (!uvCheckerEnabled) {
         meshList.forEach(mesh=>{
             console.log("Toggle On");
@@ -252,6 +254,7 @@ let createNormalLitCloneBtn = document.getElementById("createNormalLitClone");
 let normalMapEnabled = false; 
 
 createNormalLitCloneBtn.addEventListener("click", () => {
+  window.dispatchEvent(new Event("pauseAndReset"));
   if (!normalMapEnabled) {
     console.log("normal map list: ", NormalMapMeshList);
     console.log("normal toggle on !");
@@ -317,6 +320,7 @@ let emissiveMapEnabled = false;
 
 
 toggleEmissiveBtn.addEventListener("click", () => {
+  window.dispatchEvent(new Event("pauseAndReset"));
     if (!emissiveMapEnabled) {
         meshList.forEach(mesh => {
           createEmissiveShadedClone(mesh);
@@ -410,6 +414,7 @@ const toggleRoughnessBtn = document.getElementById("toggleRoughness");
 let roughnessEnabled = false;
 
 toggleRoughnessBtn.addEventListener("click", () => {
+  window.dispatchEvent(new Event("pauseAndReset"));
     if (!roughnessEnabled) {
       meshList.forEach(mesh =>{
         createRoughnessPreviewClone(mesh);
@@ -479,6 +484,7 @@ const metalnessToggle = document.getElementById("toggleMetalness");
 let metalMapEnabled = false;
 
 metalnessToggle.addEventListener("click", () => {
+  window.dispatchEvent(new Event("pauseAndReset"));
     if (!metalMapEnabled) {
       meshList.forEach(mesh => {
         createMetalRoughClone(mesh);
@@ -561,6 +567,7 @@ const toggleMatcapBtn = document.getElementById("toggleMatcap");
 let matcapEnabled = false;
 
 toggleMatcapBtn.addEventListener("click", () => {
+  window.dispatchEvent(new Event("pauseAndReset"));
     if (!matcapEnabled) {
       meshList.forEach(mesh => {
         createMatCapClone(mesh);
