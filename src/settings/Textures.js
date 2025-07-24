@@ -8,7 +8,8 @@ import {
     Texture,
   } from "@babylonjs/core"; 
 
-import * as Settings from "./Settings.js";
+import * as Settings from "./setting.js";
+import { showBottomPopup } from "../ui/UI.js";
 
 import * as Loader from "../core/Loader.js";
 
@@ -101,6 +102,7 @@ export async function remapper(fileMap){
  export async function applyMTLTextures(scene, fileMap) {
     console.log("🔍 Applying MTL textures");
     const mtlEntry = [...fileMap.entries()].find(([name]) => name.endsWith(".mtl"));
+    showBottomPopup("Apply Texture Manually",  5000)
     if (!mtlEntry) return;
     console.log("mtlEntry: ",mtlEntry);
   
@@ -127,6 +129,7 @@ export async function remapper(fileMap){
             mat.diffuseTexture = new Texture(matchedUrl, scene);
             mesh.material = mat;
             console.log(`🎯 Applied texture ${texFile} to mesh "${mesh.name}" using MTL "${fallbackMaterialName}"`);
+            showBottomPopup("Applying Texture", 4000);
           } else {
             console.warn(`❌ Texture "${texFile}" not found in fileMap for "${fallbackMaterialName}"`);
           }
@@ -475,6 +478,7 @@ export async function remapper(fileMap){
           mesh.material = mat;
           appliedAny = true;
           console.log(`🎯 Applied texture to "${mesh.name}" using material "${matName}"`);
+          showBottomPopup("No texture found in DAE , Guess applying colors",4000);
         } else {
           console.warn(`❌ Texture file "${texFile}" for "${matName}" not found in fileMap`);
         }

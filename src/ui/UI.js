@@ -80,4 +80,24 @@ function hexToBabylonColor3(hex) {
   return new Color3(r, g, b);
 }
 
-export { showLoader, hideLoader , togglePanelButton , sidePanel ,injectSTLColorOption};
+function showBottomPopup(message, duration = 3000) {
+  const container = document.getElementById("popup-container");
+
+  const popup = document.createElement("div");
+  popup.classList.add("popup-message");
+  popup.textContent = message;
+  container.appendChild(popup);
+
+  // Trigger CSS animation
+  requestAnimationFrame(() => {
+    popup.classList.add("show");
+  });
+
+  // Remove after duration
+  setTimeout(() => {
+    popup.classList.remove("show");
+    setTimeout(() => popup.remove(), 300); // Remove from DOM after transition
+  }, duration);
+}
+
+export { showLoader, hideLoader , togglePanelButton , sidePanel ,injectSTLColorOption ,  showBottomPopup};

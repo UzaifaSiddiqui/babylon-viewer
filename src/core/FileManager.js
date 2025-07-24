@@ -3,6 +3,7 @@ console.log("FileManager Works");
 
 import { updateFileData, loadModel } from "./Loader.js";
 import {convertDAEToGLB} from "../DaetoGlb/Converter.js";
+import {loadData} from "../settings/systemManager.js";
 
 let fileMap = new Map();
 let parsingText;
@@ -76,6 +77,7 @@ dropZone.addEventListener("drop", async (e) => {
     updateFileData(result.fileMap, result.extension, result.modelPathBlobUrl);
     // Load the model
     await loadModel();
+    await loadData(result.extension, result.fileMap, result.modelPathBlobUrl);
   }
 });
 

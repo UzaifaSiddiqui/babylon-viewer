@@ -85,7 +85,7 @@
     }
 
     .panel-content button {
-      display: block !important;
+      display: block;
       font-family: 'openSans', sans-serif;
       font-size: 16px;
       width: 100%;
@@ -288,6 +288,41 @@
     #texturePanel button:hover {
       background: #0056b3;
     }
+
+    #playAnim , #pauseAnim ,#resetAnim {
+      display:none;
+    }
+
+    #popup-container {
+      position: fixed;
+      bottom: 20px;
+      left: 50%;
+      transform: translateX(-50%);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 10px;
+      z-index: 10001;
+      pointer-events: none;
+    }
+
+    .popup-message {
+      background: rgba(0, 0, 0, 0.85);
+      color: white;
+      padding: 12px 20px;
+      border-radius: 8px;
+      font-family: 'openSans', sans-serif;
+      font-size: 14px;
+      opacity: 0;
+      transition: opacity 0.3s ease, transform 0.3s ease;
+      transform: translateY(20px);
+      pointer-events: auto;
+    }
+
+    .popup-message.show {
+      opacity: 1;
+      transform: translateY(0);
+    }
   </style>
 </head>
 <body>
@@ -300,6 +335,9 @@
   <div id="top-right-buttons">
     <button id="newModel">Upload New Model</button>
     <button id="togglePanelBtn">☰ Menu</button>
+    <button id="playAnim">Play</button>
+    <button id="pauseAnim">Pause</button>
+    <button id="resetAnim">Reset</button>
   </div>
 
   <!-- Side Panel -->
@@ -307,7 +345,7 @@
     <div class="panel-content">
       <div>
         <button id="toggleTexturePanel" style="margin-bottom: 12px;">Apply Texture</button>
-        <p>Wireframe Colors</p>
+        <!-- <p>Wireframe Colors</p> -->
         <div id="wireframeColors">
           <button class="color-btn" data-color="#ffffff" style="background-color: transparent; border: 2px dashed #fff;"></button>
           <button class="color-btn" data-color="#ff0000" style="background-color: #ff0000;"></button>
@@ -317,7 +355,7 @@
           <button class="color-btn" data-color="#ff00ff" style="background-color: #ff00ff;"></button>
         </div>
       </div>
-      <div id="skybox">
+<!--       <div id="skybox">
         <p>Skybox</p>
         <select id="skyboxSelector">
           <option value="">None</option>
@@ -326,21 +364,21 @@
           <option value="specular">Specular</option>
         </select>
         <button id="toggleSkyboxBtn">Apply Skybox</button>
-      </div>
-<!--       <div id="materials">
+      </div> -->
+       <div id="materials">
         <p>Materials</p>
-        <button id="toggleBaseColor">Toggle Base Color</button>
+      <!--   <button id="toggleBaseColor">Toggle Base Color</button> -->
         <button id="createNormalLitClone">Toggle Normal Map</button>
         <button id="toggleEmissive">Toggle Emissive Map</button>
         <button id="toggleMetalness">Toggle Metalness</button>
-        <button id="toggleRoughness">Toggle Roughness</button>
-      </div> -->
+        <button id="toggleRoughness">Toggle Roughness</button> 
+      </div>
       <div id="geometry">
         <p>Geometry</p>
-<!--         <button id="toggleMatcap">Toggle MatCap</button>
-        <button id="toggleMatcapSurfaceBtn">MatCap + Surface</button> -->
+        <button id="toggleMatcap">Toggle MatCap</button>
+        <!-- <button id="toggleMatcapSurfaceBtn">MatCap + Surface</button> -->
         <button id="toggleWireframe">Toggle Wireframe</button>
-        <button id="showVerticesBtn">Show Vertices</button>
+        <!-- <button id="showVerticesBtn">Show Vertices</button> -->
       </div>
       <div id="uv">
         <p>UV</p>
@@ -349,6 +387,7 @@
       <div id="file-info"></div>
     </div>
   </div>
+  <div id="popup-container"></div>
 
   <canvas id="renderCanvas"></canvas>
   <script type="module" src="src/main.js"></script>

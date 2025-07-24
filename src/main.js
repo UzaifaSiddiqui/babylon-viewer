@@ -6,8 +6,9 @@ import {
     Vector3,
     CubeTexture,
 } from "@babylonjs/core";
-import * as Settings from "./settings/Settings";
+import * as Settings from "./settings/setting";
 import "./core/FileManager";
+import "./settings/systemManager.js";
 import { fileMap } from "./core/Loader";
 import {togglePanelButton, sidePanel} from "./ui/UI";
 

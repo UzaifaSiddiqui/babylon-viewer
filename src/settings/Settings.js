@@ -16,14 +16,14 @@ import {
     MeshBuilder,
     PointsCloudSystem
 } from "@babylonjs/core";
-import { uv } from "three/src/nodes/TSL.js";
 
 
-let clearFileMapCallback = null;
+
+/* let clearFileMapCallback = null;
 
 export function registerClearFileMapCallback(callback) {
   clearFileMapCallback = callback;
-}
+} */
 
 const canvas = document.getElementById("renderCanvas");
 const engine = new Engine(canvas, true);
@@ -280,7 +280,7 @@ function createRoughnessPreviewClone(originalMesh) {
 
 
 
-function createUVCheckerClone(originalMesh) {
+/* function createUVCheckerClone(originalMesh) {
  const uvClone = originalMesh.clone(originalMesh.name + "_uvChecker");
 
  if (!uvClone || !originalMesh.material) {
@@ -303,7 +303,7 @@ function createUVCheckerClone(originalMesh) {
 
  UVCheckerMeshList.push(uvClone);
 }
-
+ */
 /* function createEmissiveShadedClone(originalMesh) {
  const emissiveClone = originalMesh.clone(originalMesh.name + "_emissiveShaded");
  if (!emissiveClone || !originalMesh.material) return;
@@ -525,8 +525,8 @@ let verticesShown = false;
 /* const toggleEmissiveBtn = document.getElementById("toggleEmissive");
 let emissiveMapEnabled = false; */
 
-const uvToggleBtn = document.getElementById("toggleUVChecker");
-let uvCheckerEnabled = false;
+/* const uvToggleBtn = document.getElementById("toggleUVChecker");
+let uvCheckerEnabled = false; */
 
 /* const metalnessToggle = document.getElementById("toggleMetalness");
 let metalMapEnabled = false;
@@ -644,7 +644,7 @@ showVerticesBtn.addEventListener("click", () => {
   meshList.forEach(mesh => mesh.visibility = uvCheckerEnabled ? 0 : 1);
 }); */
 
-uvToggleBtn.addEventListener("click", () => {
+/* uvToggleBtn.addEventListener("click", () => {
     if (!uvCheckerEnabled) {
     console.log("✅ UV toggle ON");
 
@@ -692,7 +692,8 @@ uvToggleBtn.addEventListener("click", () => {
       });
       uvCheckerEnabled = false;
     } */
-});
+/* }); */
+ 
 
 /*const toggleMetalBtn = document.getElementById("toggleMetalMap");
 let metalMapEnabled = false;
@@ -934,7 +935,7 @@ export {
     createNormalMapPreviewClone,
     createMetalRoughClone,
     createEmissiveShadedClone, */
-    createUVCheckerClone,
+    //createUVCheckerClone,
 /*     createMatCapClone,
     createMatCapSurfaceClone,
     toStandardMaterial, */
