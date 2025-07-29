@@ -9,6 +9,7 @@ let fileMap = new Map();
 let parsingText;
 let gltfParsingText;
 let convertedFile = "";
+let isConverted = false;
 
 const dropZone = document.getElementById("drop-zone");
 
@@ -77,7 +78,7 @@ dropZone.addEventListener("drop", async (e) => {
     updateFileData(result.fileMap, result.extension, result.modelPathBlobUrl);
     // Load the model
     await loadModel();
-    await loadData(result.extension, result.fileMap, result.modelPathBlobUrl);
+    await loadData(result.extension, result.fileMap, result.modelPathBlobUrl,result.isConverted);
   }
 });
 
@@ -92,6 +93,7 @@ async function loadFolderFiles(files) {
   
     if (relativePath.endsWith(".dae")) {
       convertedFile = ".dae";
+      isConverted = true;
       try {
         console.log(`⏳ Converting DAE: ${relativePath}`);
         const { blob, filename, mimeType , parsingText} = await convertDAEToGLB(file);
@@ -146,7 +148,7 @@ async function loadFolderFiles(files) {
 
   const extension = modelPath.slice(modelPath.lastIndexOf(".")).toLowerCase();
 
-  return { fileMap, extension, modelPathBlobUrl };
+  return { fileMap, extension, modelPathBlobUrl ,isConverted};
 }
 
 

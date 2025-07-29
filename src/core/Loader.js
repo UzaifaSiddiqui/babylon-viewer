@@ -74,6 +74,7 @@ function checkAnimation(){
     console.log("🎬 Animations:", animationGroups.length);
 
     if (isAnimated) {
+        document.querySelector("#toggleMatcap").style.display = "none";
         document.getElementById("playAnim").style.display = "flex";
         document.getElementById("pauseAnim").style.display = "flex";
         document.getElementById("resetAnim").style.display = "flex";
@@ -364,7 +365,11 @@ SceneLoader.OnPluginActivatedObservable.clear();
         console.log("✅ Model loaded.");
         hideLoader();
         togglePanelButton.style.display = "flex";
-        createTextureAssignmentUI(fileMap,Settings.meshList,scene);
+        const originalMaterialsWithClones = Settings.originalMaterials.map(mesh => ({
+            mesh,
+            material: mesh.material?.clone("original_" + mesh.name) || null
+        }));
+        createTextureAssignmentUI(fileMap,originalMaterialsWithClones,scene);
         focusCamera(scene.meshes, camera);
         Settings.checkAnyTextures(scene,Settings.flags);
         Settings.checkingForPresentTexture(Settings.flags);

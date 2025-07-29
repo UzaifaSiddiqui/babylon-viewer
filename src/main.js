@@ -14,14 +14,14 @@ import {togglePanelButton, sidePanel} from "./ui/UI";
 
 //Upload Button to refresh the scene
 
-const button = document.getElementById("newModel");
+/* const button = document.getElementById("newModel");
 button.addEventListener("click", () => {
   Settings.clearSceneMeshes();
   fileMap.clear();
   togglePanelButton.style.display = "none";
   sidePanel.classList.remove("active");
   document.getElementById("drop-zone").style.display = "flex";
-});
+}); */
 
 
 const scene = Settings.scene;

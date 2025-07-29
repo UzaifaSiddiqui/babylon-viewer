@@ -13,7 +13,8 @@ import {
     Effect,
     ShaderMaterial,
     MeshBuilder,
-    PointsCloudSystem
+    PointsCloudSystem,
+    VertexBuffer
 } from "@babylonjs/core";
 import { clone } from "three/examples/jsm/utils/SkeletonUtils.js";
 
@@ -43,6 +44,12 @@ let flags = {
     hasAO: false,
     hasEmissive: false
 };
+
+function applyRenderFixes(shaderMaterial) {
+  shaderMaterial.forceDepthWrite = true;
+  shaderMaterial.zOffset = -1;
+  shaderMaterial.backFaceCulling = false;
+}
 
 export function checkAnyTextures(scene,flag) {
   
@@ -86,23 +93,97 @@ function clearSceneMeshes() {
     baseColorMeshList.length = 0;
 }
 
-function applyRenderFixes(shaderMaterial) {
-    shaderMaterial.forceDepthWrite = true;
-    shaderMaterial.zOffset = -1;
-    shaderMaterial.backFaceCulling = false;
+
+/* let vertexCloud = null;
+
+function showVertices(meshes, scene) {
+  if (vertexCloud) {
+    vertexCloud.dispose();
+    vertexCloud = null;
+  }
+
+  const pcs = new PointsCloudSystem("vertexPoints", 1, scene);
+
+  let globalIndex = 0;
+
+  meshes.forEach(mesh => {
+    const positions = mesh.getVerticesData(VertexBuffer.PositionKind);
+    if (!positions) return;
+
+    const transform = mesh.getWorldMatrix();
+    const vertexCount = positions.length / 3;
+
+    const localPositions = [];
+
+    for (let i = 0; i < vertexCount; i++) {
+      const idx = i * 3;
+      const pos = new Vector3(
+        positions[idx],
+        positions[idx + 1],
+        positions[idx + 2]
+      );
+      const worldPos = Vector3.TransformCoordinates(pos, transform);
+      localPositions.push(worldPos);
+    }
+
+    pcs.addPoints(vertexCount, (particle, i) => {
+      const localIndex = i - globalIndex;
+      if (localIndex >= 0 && localIndex < localPositions.length) {
+        particle.position.copyFrom(localPositions[localIndex]);
+      }
+    });
+
+    globalIndex += vertexCount;
+  });
+
+  pcs.buildMeshAsync().then(() => {
+    vertexCloud = pcs.mesh;
+    vertexCloud.isPickable = false;
+    vertexCloud.name = "vertexCloud";
+
+    const mat = new StandardMaterial("vertexMat", scene);
+    mat.emissiveColor = new Color3(1, 0, 0); // red
+    mat.disableLighting = true;
+    mat.pointsCloud = true;
+    mat.pointSize = 5; // ← Increase size to be sure it's visible
+    vertexCloud.material = mat;
+
+    console.log("✅ Vertex cloud shown");
+  });
 }
 
-/* function disableMesh(mesh) {
-    mesh.visibility = 0;
-    if (mesh.material) mesh.material.depthWrite = false;
-    mesh.setEnabled(false);
+
+const showVerticesBtn = document.getElementById("showVerticesBtn");
+let verticesShown = false;
+
+showVerticesBtn.addEventListener("click", () => {
+  if (!verticesShown) {
+    // 🔧 Force skeleton update before capturing vertex positions
+    meshList.forEach(mesh => {
+      if (mesh.skeleton) {
+        const baked = mesh.clone(mesh.name + "_baked", null, true); // deep clone with skeleton
+        baked.convertToUnIndexedMesh();
+        baked.bakeCurrentTransformIntoVertices();
+        baked.skeleton = null; // Detach skeleton after bake
+        showVertices([baked], scene);
+        baked.dispose(); // Clean up after showing
+      } else {
+        showVertices([mesh], scene);
+      }
+    });
+
+    showVertices(meshList, scene);  // Then compute vertex world positions
+    verticesShown = true;
+    showVerticesBtn.textContent = "Hide Vertices";
+  } else {
+    if (vertexCloud) {
+      vertexCloud.dispose();
+      vertexCloud = null;
+    }
+    verticesShown = false;
+    showVerticesBtn.textContent = "Show Vertices";
   }
-  
-  function enableMesh(mesh) {
-    mesh.visibility = 1;
-    if (mesh.material) mesh.material.depthWrite = true;
-    mesh.setEnabled(true);
-  } */
+}); */
 
 // wireframe application
 let wireframeMaterial; 
@@ -168,151 +249,179 @@ toggleBtn.addEventListener("click", () => {
 
 
 // uv checker
+
 function createUVCheckerClone(originalMesh) {
- const uvClone = originalMesh.clone(originalMesh.name + "_uvChecker");
-
- if (!uvClone || !originalMesh.material) {
-  console.log("shit is not working");  
-  return
-};
-
-  console.log("shit is working!");
-
- const uvMat = new StandardMaterial("uvMat_" + originalMesh.name, scene);
- uvMat.diffuseTexture = new Texture(
-   "https://raw.githubusercontent.com/mrdoob/three.js/dev/examples/textures/uv_grid_opengl.jpg",
-   scene
- );
- uvMat.backFaceCulling = false;
- uvClone.material = uvMat;
-
- uvClone.isPickable = false;
- uvClone.visibility = 0;
-
- UVCheckerMeshList.push(uvClone);
-}
+  const uvClone = originalMesh.clone(originalMesh.name + "_uvChecker");
+ 
+  if (!uvClone || !originalMesh.material) {
+   console.log("shit is not working");  
+   return
+ };
+ 
+   console.log("shit is working!");
+ 
+  const uvMat = new StandardMaterial("uvMat_" + originalMesh.name, scene);
+  uvMat.diffuseTexture = new Texture(
+    "https://raw.githubusercontent.com/mrdoob/three.js/dev/examples/textures/uv_grid_opengl.jpg",
+    scene
+  );
+  uvMat.backFaceCulling = false;
+  uvClone.material = uvMat;
+ 
+  uvClone.isPickable = false;
+  uvClone.visibility = 0;
+ 
+  UVCheckerMeshList.push(uvClone);
+ }
 
 let uvToggleBtn = document.getElementById("toggleUVChecker");
 let uvCheckerEnabled = false;
 
 uvToggleBtn.addEventListener("click", () => {
   window.dispatchEvent(new Event("pauseAndReset"));
-    if (!uvCheckerEnabled) {
-        meshList.forEach(mesh=>{
-            console.log("Toggle On");
-            createUVCheckerClone(mesh);
-            mesh.visibility =0;
-        });
+  if (!uvCheckerEnabled) {
+    console.log("✅ UV toggle ON");
 
-        UVCheckerMeshList.forEach(clone =>{
-            clone.visibility = 1;
-        })
-        uvCheckerEnabled = true;
+    // Hide original model
+    meshList.forEach(m => m.visibility = 0);
+
+    // If already created, just show
+    if (UVCheckerMeshList.length > 0) {
+      UVCheckerMeshList.forEach(m => m.visibility = 1);
+    } else {
+      // First-time creation
+      meshList.forEach(mesh => {
+        createUVCheckerClone(mesh);
+      });
+      UVCheckerMeshList.forEach(m => m.visibility = 1);
     }
-    else{
-        UVCheckerMeshList.forEach(clone =>{
-            clone.visibility = 0;
-            clone.dispose();
-        })
-        UVCheckerMeshList.length = 0;
-        meshList.forEach(mesh =>{
-            mesh.visibility = 1;
-        })
-        uvCheckerEnabled = false;
-    } 
+
+    uvCheckerEnabled = true;
+  } else {
+    console.log("🚫 UV toggle OFF");
+
+    // Hide all UV checker clones
+    UVCheckerMeshList.forEach(m => m.visibility = 0);
+
+    // Show original model again
+    meshList.forEach(m => m.visibility = 1);
+
+    uvCheckerEnabled = false;
+  }
 });
 
 
 //Normal Texture
-
 function createNormalMapPreviewClone(originalMesh) {
-    const previewClone = originalMesh.clone(originalMesh.name + "_normalPreview");
-    if (!previewClone || !originalMesh.material) return;
+  if (!originalMesh) return;
 
-    const originalMat = originalMesh.material;
-    const normalTexture = originalMat.normalTexture || (originalMat instanceof PBRMaterial && originalMat.bumpTexture);
+  const previewClone = originalMesh.clone(originalMesh.name + "_normalPreview");
+  if (!previewClone) return;
 
-    if (!normalTexture) {
-    console.warn("⚠️ No normal texture found for", originalMesh.name);
-    return;
-    }
+  let previewMat;
 
-    // ⚠️ We're using the normal texture as a color map instead of for lighting
-    const previewMat = new StandardMaterial("normalPreviewMat_" + originalMesh.name, scene);
+  // Try to find normal texture
+  const mat = originalMesh.material;
+  const normalTexture = mat?.normalTexture || (mat instanceof PBRMaterial && mat.bumpTexture);
+
+  if (normalTexture) {
+    previewMat = new StandardMaterial("normalPreviewMat_" + originalMesh.name, scene);
     previewMat.diffuseTexture = normalTexture;
-    previewMat.emissiveColor = new Color3(1, 1, 1); // boost visibility
-    previewMat.disableLighting = true; // ❌ turn off lighting, show texture only
+  } else {
+    console.warn("⚠️ No normal texture for", originalMesh.name, "- using fallback");
+    previewMat = new StandardMaterial("fallbackNormalMat_" + originalMesh.name, scene);
+    previewMat.diffuseColor = new Color3(0, 0, 0); // flat blue normal map color
+  }
 
-    previewClone.material = previewMat;
-    previewClone.isPickable = false;
-    previewClone.visibility = 0;
+  previewMat.emissiveColor = Color3.White();
+  previewMat.disableLighting = true;
+  previewMat.backFaceCulling = false;
 
-    NormalMapMeshList.push(previewClone);
+  previewClone.material = previewMat;
+  previewClone.visibility = 0;
+  previewClone.setEnabled(false);
+  previewClone.isPickable = false;
+  previewClone.computeWorldMatrix(true);
+
+  NormalMapMeshList.push(previewClone);
 }
 
-let createNormalLitCloneBtn = document.getElementById("createNormalLitClone");
-let normalMapEnabled = false; 
+
+const createNormalLitCloneBtn = document.getElementById("createNormalLitClone");
+let normalPreviewEnabled = false;
 
 createNormalLitCloneBtn.addEventListener("click", () => {
   window.dispatchEvent(new Event("pauseAndReset"));
-  if (!normalMapEnabled) {
-    console.log("normal map list: ", NormalMapMeshList);
-    console.log("normal toggle on !");
-    meshList.forEach(mesh =>{
-      createNormalMapPreviewClone(mesh);
-      mesh.visibility=0;
-    })
-    NormalMapMeshList.forEach(clone =>{
-        clone.visibility =1;
-    })
-    normalMapEnabled = true;
-    return;
-  }
-  else{
-    NormalMapMeshList.forEach(clone =>{
-        clone.visibility = 0;
-        clone.dispose();
-    })
-    NormalMapMeshList.length = 0;
-    meshList.forEach(c => c.visibility = 1);
-    normalMapEnabled = false;
-  }
 
+  if (!normalPreviewEnabled) {
+    // Create clones only once
+    if (NormalMapMeshList.length === 0) {
+      meshList.forEach(mesh => createNormalMapPreviewClone(mesh));
+    }
+
+    meshList.forEach(mesh => mesh.visibility = 0);
+    NormalMapMeshList.forEach(clone => {
+      clone.visibility = 1;
+      clone.setEnabled(true);
+    });
+
+    normalPreviewEnabled = true;
+    toggleNormalBtn.textContent = "Hide Normal Preview";
+  } else {
+    NormalMapMeshList.forEach(clone => {
+      clone.visibility = 0;
+      clone.setEnabled(false);
+    });
+
+    meshList.forEach(mesh => mesh.visibility = 1);
+    normalPreviewEnabled = false;
+    toggleNormalBtn.textContent = "Show Normal Preview";
+  }
 });
-
 //emissive texture
 
 function createEmissiveShadedClone(originalMesh) {
-    const emissiveClone = originalMesh.clone(originalMesh.name + "_emissiveShaded");
-    if (!emissiveClone || !originalMesh.material) return;
+  if (!originalMesh || !originalMesh.material) return;
 
-    const originalMat = originalMesh.material;
-    const emissiveTexture = originalMat.emissiveTexture;
-
-    if (!emissiveTexture) {
-    console.warn("⚠️ No emissive texture found for", originalMesh.name);
+  const emissiveTexture = originalMesh.material.emissiveTexture;
+  if (!emissiveTexture) {
+    console.warn("⚠️ No emissive texture for", originalMesh.name);
     return;
-    }
+  }
 
-    const pbr = new PBRMaterial("emissiveShaded_" + originalMesh.name, scene);
-    pbr.albedoColor = new Color3(0, 0, 0); // No base color
-    pbr.emissiveTexture = emissiveTexture;
-    pbr.emissiveColor = Color3.White(); // Can change to match emissive factor
-    pbr.metallic = 0;
-    pbr.roughness = 1;
-    pbr.backFaceCulling = false;
-    pbr.usePhysicalLightFalloff = false;
-    pbr.zOffset = -1;
+  const emissiveClone = originalMesh.clone(originalMesh.name + "_emissiveShaded");
+  if (!emissiveClone) return;
 
-    emissiveClone.material = pbr;
-    emissiveClone.isPickable = false;
-    emissiveClone.visibility = 0;
-    emissiveClone.receiveShadows = false;
-    emissiveClone.position = originalMesh.position.clone();
+  // Clone or reuse texture
+  const clonedEmissiveTex = emissiveTexture.clone(); // ✅ clone() is safer than relying on .url
+  clonedEmissiveTex.updateSamplingMode(Texture.TRILINEAR_SAMPLINGMODE);
+  clonedEmissiveTex.gammaSpace = false;
+  clonedEmissiveTex.wrapU = Texture.CLAMP_ADDRESSMODE;
+  clonedEmissiveTex.wrapV = Texture.CLAMP_ADDRESSMODE;
+  clonedEmissiveTex.name = "ClonedEmissive_" + originalMesh.name;
 
+  const pbr = new PBRMaterial("emissiveShaded_" + originalMesh.name, scene);
+  pbr.albedoColor = new Color3(0, 0, 0);
+  pbr.emissiveTexture = clonedEmissiveTex;
+  pbr.emissiveColor = new Color3(10, 10, 10); // Brighter for test
+  pbr.emissiveIntensity = 1.5;
+  pbr.metallic = 0;
+  pbr.roughness = 1;
+  pbr.backFaceCulling = false;
+  pbr.usePhysicalLightFalloff = false;
+  pbr.disableLighting = false;
+  pbr.forceDepthWrite = true;
+  pbr.zOffset = -1;
+  pbr.renderingGroupId = 1;
 
+  emissiveClone.material = pbr;
+  emissiveClone.isPickable = false;
+  emissiveClone.visibility = 0;
+  emissiveClone.receiveShadows = false;
+  emissiveClone.computeWorldMatrix(true);
+  emissiveClone.setEnabled(true);
 
-    EmissiveMapMeshList.push(emissiveClone);
+  EmissiveMapMeshList.push(emissiveClone);
 }
 
 const toggleEmissiveBtn = document.getElementById("toggleEmissive");
@@ -321,29 +430,39 @@ let emissiveMapEnabled = false;
 
 toggleEmissiveBtn.addEventListener("click", () => {
   window.dispatchEvent(new Event("pauseAndReset"));
-    if (!emissiveMapEnabled) {
-        meshList.forEach(mesh => {
-          createEmissiveShadedClone(mesh);
-          mesh.visibility = 0;
-      });
-  
-      EmissiveMapMeshList.forEach(clone =>{
-          clone.visibility = 1;
-      })
-      emissiveMapEnabled = true;
-      return;
+
+  if (!emissiveMapEnabled) {
+    console.log("🌟 Enabling emissive map preview...");
+    meshList.forEach(mesh => {
+      createEmissiveShadedClone(mesh);
+      mesh.visibility = 0;
+    });
+
+    EmissiveMapMeshList.forEach(clone => {
+      clone.visibility = 1;
+      clone.setEnabled(true);
+    });
+
+    emissiveMapEnabled = true;
+  } else {
+    console.log("🧹 Disabling emissive preview and cleaning up...");
+    EmissiveMapMeshList.forEach(clone => {
+      if (clone.material?.emissiveTexture) {
+        clone.material.emissiveTexture.dispose();
       }
-      else{
-      EmissiveMapMeshList.forEach(clone =>{
-          clone.visibility = 0;
-          clone.dispose();
-      });
-      EmissiveMapMeshList.length = 0;
-      meshList.forEach(mesh =>{
-          mesh.visibility = 1;
-      });
-      emissiveMapEnabled = false;
-      }
+      clone.material?.dispose();
+      clone.dispose();
+    });
+
+    EmissiveMapMeshList.length = 0;
+
+    meshList.forEach(mesh => {
+      mesh.visibility = 1;
+      mesh.setEnabled(true);
+    });
+
+    emissiveMapEnabled = false;
+  }
 });
 
 //roughness texture
@@ -442,9 +561,56 @@ toggleRoughnessBtn.addEventListener("click", () => {
 
 // metalness texture
 
-function createMetalRoughClone(originalMesh) {
-    const metalClone = originalMesh.clone(originalMesh.name + "_metalClone");
-    if (!metalClone || !originalMesh.material) return;
+/* function createMetalRoughClone(originalMesh) {
+  if (!originalMesh || !originalMesh.material) return;
+
+  const originalMat = originalMesh.material;
+  const metallicTex = originalMat instanceof PBRMaterial ? originalMat.metallicTexture : null;
+  if (!metallicTex) {
+    console.warn("⚠️ No metallic texture found for", originalMesh.name);
+    return;
+  }
+
+  const metalClone = originalMesh.clone(originalMesh.name + "_metalClone");
+  if (!metalClone) return;
+
+  // ✅ Create a clean, isolated clone of the texture
+  const clonedMetalTex = new Texture(metallicTex.url, scene, false, false);
+  clonedMetalTex.name = "ClonedMetal_" + originalMesh.name;
+  clonedMetalTex.gammaSpace = false;
+  clonedMetalTex.wrapU = Texture.CLAMP_ADDRESSMODE;
+  clonedMetalTex.wrapV = Texture.CLAMP_ADDRESSMODE;
+  clonedMetalTex.generateMipMaps = false;
+  clonedMetalTex.updateSamplingMode(Texture.NEAREST_NEAREST); // 🔍 avoids shimmering
+
+  const pbr = new PBRMaterial("metalView_" + originalMesh.name, scene);
+  pbr.albedoColor = new Color3(0, 0, 0); // Dark base for pure metal view
+  pbr.metallicTexture = clonedMetalTex;
+
+  pbr.useMetallnessFromMetallicTextureBlue = true;
+  pbr.useRoughnessFromMetallicTextureGreen = true;
+  pbr.useRoughnessFromMetallicTextureAlpha = false;
+
+  // ✅ Prevent lighting shimmer
+  pbr.environmentTexture = null;              // <--- NO lighting (important)
+  pbr.disableLighting = true;                // <--- NO scene light contribution
+  pbr.backFaceCulling = false;
+  pbr.forceDepthWrite = true;
+  pbr.zOffset = -1;
+  pbr.renderingGroupId = 1;
+
+  metalClone.material = pbr;
+  metalClone.isPickable = false;
+  metalClone.visibility = 0;
+  metalClone.receiveShadows = false;
+  metalClone.computeWorldMatrix(true);
+  metalClone.setEnabled(false);
+
+  metalMapMeshList.push(metalClone);
+} */
+
+  function createMetalRoughClone(originalMesh) {
+    if (!originalMesh || !originalMesh.material) return;
   
     const originalMat = originalMesh.material;
     if (!(originalMat instanceof PBRMaterial) || !originalMat.metallicTexture) {
@@ -452,59 +618,73 @@ function createMetalRoughClone(originalMesh) {
       return;
     }
   
-    const pbr = new PBRMaterial("metalView_" + originalMesh.name, scene);
+    // Clone the entire material (deep clone)
+    const clonedMat = originalMat.clone("metalViewMat_" + originalMesh.name);
   
-    // ✳️ Use black albedo so metal/rough map dominates
-    pbr.albedoColor = new Color3(0, 0, 0);
+    // Override properties to focus on metalness preview:
+    clonedMat.albedoColor = new Color3(0, 0, 0); // black base to emphasize metalness
+    clonedMat.useMetallnessFromMetallicTextureBlue = true;
+    clonedMat.useRoughnessFromMetallicTextureGreen = true;
+    clonedMat.useRoughnessFromMetallicTextureAlpha = false;
   
-    // ✅ Apply metal/rough texture
-    pbr.metallicTexture = originalMat.metallicTexture;
-    pbr.useMetallnessFromMetallicTextureBlue = true;
-    pbr.useRoughnessFromMetallicTextureGreen = true;
-    pbr.useRoughnessFromMetallicTextureAlpha = false;
+    // Optional: adjust lighting environment if needed
+    clonedMat.environmentTexture = originalMat.environmentTexture || scene.environmentTexture;
+    clonedMat.disableLighting = false;
+    clonedMat.backFaceCulling = false;
   
-    // ✅ Force lighting environment to reduce shimmer
-    pbr.environmentTexture = scene.environmentTexture;
-    pbr.forceIrradianceInFragment = true;
+    // Create clone of mesh and assign the cloned material
+    const metalClone = originalMesh.clone(originalMesh.name + "_metalClone");
+    if (!metalClone) return;
   
-    // 🔧 Reduce specular aliasing/shimmering
-    pbr.environmentIntensity = 1;
-    pbr.realTimeFiltering = true;
-    pbr.backFaceCulling = false;
-  
-    metalClone.material = pbr;
+    metalClone.material = clonedMat;
     metalClone.isPickable = false;
     metalClone.visibility = 0;
+    metalClone.receiveShadows = false;
     metalClone.computeWorldMatrix(true);
+    metalClone.setEnabled(true);
   
     metalMapMeshList.push(metalClone);
-}
+  }
+
 
 const metalnessToggle = document.getElementById("toggleMetalness");
 let metalMapEnabled = false;
 
 metalnessToggle.addEventListener("click", () => {
   window.dispatchEvent(new Event("pauseAndReset"));
-    if (!metalMapEnabled) {
-      meshList.forEach(mesh => {
-        createMetalRoughClone(mesh);
-        mesh.visibility = 0;
+
+  if (!metalMapEnabled) {
+    console.log("🔷 Enabling metalness preview...");
+    meshList.forEach(mesh => {
+      createMetalRoughClone(mesh);
+      mesh.visibility = 0;
     });
+
     metalMapMeshList.forEach(clone => {
-        clone.visibility = 1;
+      clone.visibility = 1;
+      clone.setEnabled(true);
     });
+
     metalMapEnabled = true;
-    } else {
-      metalMapMeshList.forEach(clone => {
-        clone.visibility = 0;
-        clone.dispose();
-      });
-      metalMapMeshList.length = 0;
-      meshList.forEach(mesh => {
-        mesh.visibility = 1;
-      });
-      metalMapEnabled = false;
-    }
+  } else {
+    console.log("🧹 Disabling metalness preview and cleaning up...");
+    metalMapMeshList.forEach(clone => {
+      if (clone.material?.metallicTexture?.name?.startsWith("ClonedMetalTex_")) {
+        clone.material.metallicTexture.dispose();
+      }
+      clone.material?.dispose();
+      clone.dispose();
+    });
+
+    metalMapMeshList.length = 0;
+
+    meshList.forEach(mesh => {
+      mesh.visibility = 1;
+      mesh.setEnabled(true);
+    });
+
+    metalMapEnabled = false;
+  }
 });
 
 //metcap texture
@@ -620,6 +800,9 @@ export function checkingForPresentTexture(flags){
         metalnessToggle.style.display = "block";
     }else{
         metalnessToggle.style.display = "none";
+    }
+    if(!flags.hasNormal && !flags.hasEmissive && !flags.hasMetallic && !flags.hasRoughness){
+      document.querySelector("#materials").style.display = "none";
     }
 
 }

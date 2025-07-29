@@ -298,7 +298,7 @@ export async function remapper(fileMap){
 
       const uploadInput = document.createElement("input");
       uploadInput.type = "file";
-      uploadInput.accept = ".png, .jpg, .jpeg, .tga"; // allowed formats
+      uploadInput.accept = ".png, .jpg, .jpeg"; // allowed formats
       uploadInput.style.marginBottom = "10px";
       panel.appendChild(uploadInput);
 
@@ -338,10 +338,10 @@ export async function remapper(fileMap){
       allOption.textContent = "All Meshes";
       meshSelect.appendChild(allOption);
     
-      originalMaterials.forEach((m, i) => {
+      originalMaterials.forEach((entry, i) => {
         const option = document.createElement("option");
         option.value = i;
-        option.textContent = `Mesh ${i + 1} (${m.name})`;
+        option.textContent = entry.mesh.name || `Mesh ${i + 1}`;
         meshSelect.appendChild(option);
       });
     
@@ -379,6 +379,17 @@ export async function remapper(fileMap){
       applyBtn.textContent = "Apply Material";
       applyBtn.style.marginTop = "10px";
       applyBtn.addEventListener("click", () => {
+
+        if (
+          !selectors.albedo.value &&
+          !selectors.normal.value &&
+          !selectors.metallic.value &&
+          !selectors.roughness.value &&
+          !selectors.ao.value
+        ) {
+          showBottomPopup("No textures selected; skipping material application",4000);
+          return; // Exit early without applying any material
+        }
         const mat = new PBRMaterial("customPBR", scene);
     
         if (selectors.albedo.value) mat.albedoTexture = new Texture(selectors.albedo.value, scene);
@@ -392,22 +403,35 @@ export async function remapper(fileMap){
     
         const target = meshSelect.value;
         if (target === "all") {
-          originalMaterials.forEach(m => {
-            if (m.material) m.material.dispose();
-            m.material = mat;
+          originalMaterials.forEach(entry => {
+            if (entry.mesh.material) entry.mesh.material.dispose();
+            entry.mesh.material = mat;
           });
           console.log("✅ Applied material to all meshes.");
-        } else {
+        }
+        else {
           const index = parseInt(target);
-          const mesh = originalMaterials[index];
-          if (mesh) {
-            if (mesh.material) mesh.material.dispose();
-            mesh.material = mat;
-            console.log(`✅ Applied material to Mesh ${index + 1} (${mesh.name})`);
+          const entry = originalMaterials[index];
+          if (entry && entry.mesh) {
+            if (entry.mesh.material) entry.mesh.material.dispose();
+            entry.mesh.material = mat;
+            console.log(`✅ Applied material to Mesh ${index + 1} (${entry.mesh.name})`);
           }
         }
       });
       panel.appendChild(applyBtn);
+      const undoBtn = document.createElement("button");
+      undoBtn.textContent = "Undo Texture";
+      undoBtn.style.marginTop = "10px";
+      undoBtn.addEventListener("click", () => {
+        originalMaterials.forEach(entry => {
+          if (entry.mesh && entry.material) {
+            entry.mesh.material = entry.material.clone("restored_" + entry.mesh.name);
+          }
+        });
+        showBottomPopup("🔁 Original materials restored.", 3000);
+      });
+      panel.appendChild(undoBtn);
     }
 
   

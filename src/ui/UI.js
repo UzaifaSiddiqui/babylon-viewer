@@ -100,4 +100,13 @@ function showBottomPopup(message, duration = 3000) {
   }, duration);
 }
 
+/* document.getElementById('newModel').addEventListener('click', () => {
+  document.getElementById('folderOpener').click();
+});
+
+// Don't process the files — let the user drag and drop manually.
+document.getElementById('folderOpener').addEventListener('change', () => {
+  alert("✅ Folder opened. Now drag and drop the files into the viewer.");
+}); */
+
 export { showLoader, hideLoader , togglePanelButton , sidePanel ,injectSTLColorOption ,  showBottomPopup};

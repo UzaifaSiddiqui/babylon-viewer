@@ -1,26 +1,18 @@
 console.log("system manager is working!");
 import { showBottomPopup } from "../ui/UI.js";
 
-/* function showBottomPopup(message, duration = 3000) {
-    const popup = document.getElementById("bottom-popup");
-    popup.textContent = message;
-    popup.classList.add("show");
-  
-    setTimeout(() => {
-      popup.classList.remove("show");
-    }, duration);
-}
- */
 
 let panel = document.querySelector("#toggleTexturePanel");
-export async function loadData(extension, fileMap, modelPathBlobUrl) {
+export async function loadData(extension, fileMap, modelPathBlobUrl , isConverted) {
+
+    console.log("is converted: ", isConverted);
 
     if (!modelPathBlobUrl || !extension) {
         console.warn("⚠️ Files not ready yet.");
         return;
     }
 
-    if (extension === ".gltf") {
+    if (extension === ".gltf" && !isConverted) {
         if (panel) panel.style.display = "none";
     }
 
